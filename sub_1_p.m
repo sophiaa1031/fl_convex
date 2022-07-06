@@ -89,7 +89,7 @@ p
 
 %% 
 figure(1)
-plot( 5400:length(L_v),L_v(5400:length(L_v)), '-ro', 'linewidth',2)
+plot( 2:length(L_v),L_v(2:length(L_v)), '-ro', 'linewidth',2)
 grid on
 xlabel('Iteration round');
 ylabel('Lagrange function');
