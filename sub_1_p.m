@@ -9,7 +9,6 @@ b= 1e6; %bandwidth
 gamma=3.76;
 p0=0.01;  %uplink power
 itr = 2;%local iterations
-q = rand(1,m);%RB assignment
 Dia = 15; %diameter of the BS
 z = 28.1; %model size
 T_max = 35*ones(1,m); %maximum latency in one round
@@ -26,6 +25,7 @@ v = normrnd(13,5,1,m); %velocity
 % distance = 1+12.*rand(1,m);
 % v = 30.*rand(1,m);
 
+q = rand(1,m);%RB assignment
 p = ones(1,m)*0.1; % 决策变量功率p初始化
 lambda = ones(m,1)*0.05;   % 拉格朗日乘子lambda初始化 
 real_ite=1; % 当前迭代次数
@@ -87,7 +87,7 @@ disp(['迭代次数为：',num2str(real_ite),'次']);
 disp(['最优值点为：']);
 p
 
-%% 
+%% 查看收敛性
 figure(1)
 plot( 2:length(L_v),L_v(2:length(L_v)), '-ro', 'linewidth',2)
 grid on
@@ -99,3 +99,9 @@ plot( 2:length(L_v), obj_v(2:length(obj_v)) - L_v(2:length(L_v)) , '-b*', 'linew
 grid on
 xlabel('Iteration round');
 ylabel('Objective - Lagrange function');
+
+%% p与f，d关系
+figure(3)
+pfd=[(p*100)',(f/1e8)',distance']
+bar(1:10,pfd(1:10,:))
+legend("p*10^(-2)","f*10^8","distance")
