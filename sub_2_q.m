@@ -1,6 +1,7 @@
 %% clc;clear;close
 
 m=50; %Users' total number
+N = 20; %the number of resource blocks
 iterationNumber=10;    %Maximun iteration times
 hk=0.000004;    %Channel gain 
 I=3.7*10^(-8);  %Interference
@@ -11,7 +12,7 @@ p0=0.01;  %uplink power
 itr = 2;%local iterations
 Dia = 15; %diameter of the BS
 z = 28.1; %model size
-T_max = 35*ones(1,m); %maximum latency in one round
+T_max = 35; %maximum latency in one round
 erequirement=0.7*ones(1,m); %% energy requirement
 kapa = 1e-28;%processor coefficient
 D = 128;%sample size
@@ -28,6 +29,7 @@ v = 30.*rand(1,m);
 q = ones(1,m)*0.1;% 决策变量资源分配q初始化
 p = rand(1,m); % 功率p初始化
 
+q_min = 0.01; % q的下界
 mu = ones(m,1)*0.05;   % 拉格朗日乘子mu初始化 
 beta = ones(m,1)*0.05;   % 拉格朗日乘子beta初始化 
 real_ite=1; % 当前迭代次数
@@ -41,20 +43,26 @@ t_beta=0.01;      % 拉格朗日乘子的更新步长
 max_iteration = 3e4;  % 最大迭代次数
 
 for i = 1 : max_iteration
-    %% 二分法找到最优值
+    % 二分法找到最优值
     
-    %% 代码写在这
+        for k=1:m
+        V_1 = (I+bkn0)/(p(k)*distance(k)^(-gamma));
+        V_2 = z/2^(b*(T_max-itr*D*c/f(k)));
+        V_3 = p(k)*z/(q(k)^2*b*log2(1+p(k)*hk/(I+bkn0));
+        l_q = -exp((2*V_2/q(k)-1)*f(k))/q(k)^2-V_1^2*V_2*log(2)*2^(V_2/q(k))*exp((2*V_2/q(k)-1)*f(k))/q(k)^3-mu(k)*V_3+beta;    
     
-    
-    %% 迭代更新拉格朗日乘子 mu
+    % 迭代更新拉格朗日乘子 mu
     for k=1:m
-        % 梯度这要改
-        Grad_f(k) = p(k)*z*inv_pos(q(k)*b*log(1+p(k)*hk/(I+bkn0))/log(2))+itr*kapa*D*c*f(k)^2 - erequirement(k);
+        Grad_mu(k) = p(k)*z*inv_pos(q(k)*b*log(1+p(k)*hk/(I+bkn0))/log(2))+itr*kapa*D*c*f(k)^2 - erequirement(k);
     end
-    mu = max( mu + t_mu * Grad_f' , zeros( m,1) );
+    mu = max( mu + t_mu * Grad_mu' , zeros( m,1) );
+    
+    % 迭代更新拉格朗日乘子 beta
+    Grad_beta = sum(q)-N;
+    mu = max( mu + t_beta * Grad_beta' , 0 );
 
     for k=1:m
-    Term1(k) = 2^(z/(b*q(k)*(T_max(k)-itr*D*c/f(k)))-1);
+    Term1(k) = 2^(z/(b*q(k)*(T_max-itr*D*c/f(k)))-1);
     end
     obj = 0;
     for k=1:m
@@ -62,9 +70,9 @@ for i = 1 : max_iteration
     end
     
     % 拉格朗日函数
-    L = obj+sum(Grad_f * mu);
+    L = obj+sum(Grad_mu * mu)+sum(Grad_beta * beta);
     % 记录历史更新结果
-    G_v = [G_v Grad_f];%乘子的梯度
+    G_v = [G_v Grad_mu];%乘子的梯度
     mu_v = [mu_v mu];%乘子的值
     obj_v = [obj_v obj]; % obj_v append
     L_v = [L_v L]; % L_v append
@@ -81,7 +89,7 @@ if i == max_iteration
 end
 disp(['迭代次数为：',num2str(real_ite),'次']);
 disp(['最优值点为：']);
-p
+q
 
 %% 查看收敛性
 figure(1)
@@ -95,9 +103,3 @@ plot( 2:length(L_v), obj_v(2:length(obj_v)) - L_v(2:length(L_v)) , '-b*', 'linew
 grid on
 xlabel('Iteration round');
 ylabel('Objective - Lagrange function');
-
-%% p与f，d关系
-figure(3)
-pfd=[(p*100)',(f/1e8)',distance']
-bar(1:10,pfd(1:10,:))
-legend("p*10^(-2)","f*10^8","distance")
