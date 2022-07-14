@@ -1,9 +1,9 @@
-%% clc;clear;close
+clc;clear;close all
 
 m=50; %Users' total number
-N = 20; %the number of resource blocks
+N = m*0.5; %the number of resource blocks
 iterationNumber=10;    %Maximun iteration times
-hk=0.000004;    %Channel gain 
+hk=0.000004;    %Channel gain
 I=3.7*10^(-8);  %Interference
 bkn0=10^(-14);  %Noise = B * N0
 b= 1e6; %bandwidth
@@ -25,32 +25,54 @@ c = 1.68e7;%cpu bits
 f= 7e8+(1e9-7e8)*rand(1,m);
 distance = 1+12.*rand(1,m);
 v = 30.*rand(1,m);
-
-q = ones(1,m)*0.1;% 决策变量资源分配q初始化
 p = rand(1,m); % 功率p初始化
 
-q_min = 0.01; % q的下界
-mu = ones(m,1)*0.05;   % 拉格朗日乘子mu初始化 
-beta = ones(m,1)*0.05;   % 拉格朗日乘子beta初始化 
+q_min = ones(1,m)*0.001;% q的下界
+q_max = ones(1,m)*1;% q的上界
+q = ones(1,m)*1;% 决策变量资源分配q初始化
+get_gradient_q_left = zeros(1,m);
+get_gradient_q_right = zeros(1,m);
+delta_q = 0.001; % 二分法q的搜索停止条件
+
+mu = ones(m,1)*0.1;   % 拉格朗日乘子mu初始化
+beta = 10;   % 拉格朗日乘子beta初始化
 real_ite=1; % 当前迭代次数
-G_v = [];  
-mu_v = [];  
+G_v = [];
+mu_v = [];
 L_v = [];  % 拉格朗日函数
-obj_v = []; 
+obj_v = [];
 tol = 10^(-4); % 判断收敛的阈值
 t_mu=0.01;  % 拉格朗日乘子的更新步长
 t_beta=0.01;      % 拉格朗日乘子的更新步长
 max_iteration = 3e4;  % 最大迭代次数
 
 for i = 1 : max_iteration
-    % 二分法找到最优值
-    
-        for k=1:m
-        V_1 = (I+bkn0)/(p(k)*distance(k)^(-gamma));
-        V_2 = z/2^(b*(T_max-itr*D*c/f(k)));
-        V_3 = p(k)*z/(q(k)^2*b*log2(1+p(k)*hk/(I+bkn0));
-        l_q = -exp((2*V_2/q(k)-1)*f(k))/q(k)^2-V_1^2*V_2*log(2)*2^(V_2/q(k))*exp((2*V_2/q(k)-1)*f(k))/q(k)^3-mu(k)*V_3+beta;    
-    
+    %% 二分法找到最优值
+    q_left = q_min;
+    q_right = q_max;
+    for k=1:m
+      get_gradient_q_left(k) = get_gradient_q(q_left(k),f(k),distance(k),p(k),mu(k),beta);
+      get_gradient_q_right(k) = get_gradient_q(q_right(k),f(k),distance(k),p(k),mu(k),beta);
+      if get_gradient_q_left(k)<=0 && get_gradient_q_right(k)<=0
+        q(k) = q_right(k);
+      else
+        if get_gradient_q_left(k)>=0 && get_gradient_q_right(k) >=0
+          q(k) = q_left(k);
+        else
+          while q_right(k)-q_left(k)>=delta_q
+            q(k) = (q_left(k)+q_right(k))/2;
+            l_qk = get_gradient_q(q(k),f(k),distance(k),p(k),mu(k),beta);
+            if (l_qk==0)
+              break
+            elseif (l_qk<0)
+              q_left(k) = q(k);
+            else
+              q_right(k) = q(k);
+            end
+          end
+        end
+      end
+    end
     % 迭代更新拉格朗日乘子 mu
     for k=1:m
         Grad_mu(k) = p(k)*z*inv_pos(q(k)*b*log(1+p(k)*hk/(I+bkn0))/log(2))+itr*kapa*D*c*f(k)^2 - erequirement(k);
@@ -59,7 +81,7 @@ for i = 1 : max_iteration
     
     % 迭代更新拉格朗日乘子 beta
     Grad_beta = sum(q)-N;
-    mu = max( mu + t_beta * Grad_beta' , 0 );
+    beta = max( beta + t_beta * Grad_beta' , 0 );
 
     for k=1:m
     Term1(k) = 2^(z/(b*q(k)*(T_max-itr*D*c/f(k)))-1);
