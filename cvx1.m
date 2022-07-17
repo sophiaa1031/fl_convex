@@ -29,6 +29,6 @@ cvx_begin
     variable p(1,m) nonnegative
     minimize(norm(exp((I+bkn0) .*inv_pos(p).*(2.^(z./(b.* q.*(T_max-itr*D*c./f))-1))./(distance.^(-gamma)))./q,1))
     subject to
-       z*p./(b.* q*log(1+p*hk/(I+bkn0))/log(2))+itr*kapa*D*c*f.^2<=erequirement;
-       z./(b.* q*log(1+p*hk/(I+bkn0))/log(2))+I*D*c./f<=T_max;
+       z*p(k)/(b* q(k)*log(1+p(k)*hk/(I+bkn0))/log(2))+itr*kapa*D*c*(f(k))^2<=erequirement;
+       z/(b* q(k)*log(1+p(k)*hk/(I+bkn0))/log(2))+I*D*c/f(k)<=T_max;
 cvx_end
