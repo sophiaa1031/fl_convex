@@ -43,7 +43,7 @@ for i = 1 : max_iteration
     for k=1:m
         v1 = (I+bkn0)/(p(k)*distance(k)^(-gamma));
         v2 = 2^(z*f((k))/(b*q(k)*D*c));
-        v3 = T_max(k) *f(k)/(D*c);
+        v3 = T_max *f(k)/(D*c);
         v4 = p(k)*z*T*inv_pos(q(k)*itr^2*b*log(1+p(k)*hk/(I+bkn0))/log(2));
         part_itr(k) = exp(2^(v2/(v3-itr)-1)*v1)*(4*v3^2-8*v3*itr+itr*(4*itr+2^(v2/(v3-itr))*v1*v2*log(2)))/(2*q(k)*(v3-itr)^2)-2+lambda(k)*v4;
     end
@@ -52,16 +52,16 @@ for i = 1 : max_iteration
 
     %% 迭代更新拉格朗日乘子 lambda
     for k=1:m
-        Grad_f(k) = p(k)*z*T*inv_pos(q(k)*itr*b*log(1+p(k)*hk/(I+bkn0))/log(2))+T*kapa*D*c*f(k)^2 - erequirement(k);
+        Grad_f(k) = p(k)*z*T*inv_pos(q(k)*itr*b*log(1+p(k)*hk/(I+bkn0))/log(2))+T*kapa*D*c*f(k)^2 - erequirement;
     end
     lambda = max( lambda + t_lambda * Grad_f' , zeros( m,1) );
 
+%     for k=1:m
+%     Term1(k) = 2^(z/(b*q(k)*(T_max-itr*D*c/f(k)))-1);
+%     end
+%     obj = 2*(itr-1)^2;
     for k=1:m
-    Term1(k) = 2^(z/(b*q(k)*(T_max(k)-itr*D*c/f(k)))-1);
-    end
-    obj = 2*(itr-1)^2;
-    for k=1:m
-        obj = obj + itr^2 * (exp((I+bkn0)*Term1(k)*inv_pos(p(k))/(distance(k)^(-gamma)))/q(k)-1);
+        obj = obj + exp((I+bkn0)*inv_pos(p(k))/(distance(k)^(-gamma))*(2^z/(b*q(k)*(T_max-itr*D*c/f(k)))-1))/q(k);
     end
     
     % 拉格朗日函数
@@ -82,13 +82,13 @@ for i = 1 : max_iteration
     real_ite=real_ite+1;
 end
 
-
-if i == max_iteration
-    disp(['超过最大迭代次数！']);
-end
-disp(['迭代次数为：',num2str(real_ite),'次']);
-disp(['最优值点为：']);
-itr
+%%
+% if i == max_iteration
+%     disp(['超过最大迭代次数！']);
+% end
+% disp(['迭代次数为：',num2str(real_ite),'次']);
+% disp(['最优值点为：']);
+% itr
 
 % %% 查看收敛性
 % figure(1)

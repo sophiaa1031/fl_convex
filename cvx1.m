@@ -3,7 +3,7 @@ clc;clear;close
 m=50; %Users' total number
 iterationNumber=10;    %Maximun iteration times
 hk=0.000004;    %Channel gain 
-I=3.7*10^(-8);  %Interference
+I=3*10^(-8);  %Interference
 bkn0=10^(-14);  %Noise = B * N0
 b= 1e6; %bandwidth
 gamma=3.76;

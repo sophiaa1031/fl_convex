@@ -13,7 +13,7 @@ t_lambda=0.01;  % 拉格朗日乘子的更新步长
 t_mu=0.01;  % 拉格朗日乘子的更新步长
 t_beta=0.01;  % 拉格朗日乘子的更新步长
 t_x=0.01;      % 决策变量 x 的更新步长
-max_iteration = 3e4;  % 最大迭代次数
+max_iteration = 300;  % 最大迭代次数
 
 for i = 1 : max_iteration
     %% 迭代更新功率P
@@ -24,7 +24,7 @@ for i = 1 : max_iteration
         H4 = -H2*H3*p(k)/(1+H3*p(k))/(log2(1+H3*p(k)))^2+H2/(log2(1+H3*p(k)));
         part_p = -H1*exp(H1/p(k))/(q(k)*(p(k))^2)+lambda(k)*H4;
         
-        p(k) = max(p(k)-t_x*part_p,p_min)
+        p(k) = max(p(k)-t_x*part_p
     end
     %% 迭代更新拉格朗日乘子 lambda
     for k=1:m

@@ -1,6 +1,7 @@
+%% 
 clc;clear;close all
 
-m=50; %Users' total number
+m=20; %Users' total number
 N = m*0.5; %the number of resource blocks
 iterationNumber=10;    %Maximun iteration times
 hk=0.000004;    %Channel gain
@@ -10,8 +11,8 @@ b= 1e6; %bandwidth
 gamma=3.76;
 Dia = 15; %diameter of the BS
 z = 1e4; %model size 10Mb
-T_max = 35*ones(1,m); %maximum latency in one round
-erequirement=0.7*ones(1,m); %% energy requirement
+T_max = 7; %maximum latency in one round
+erequirement=0.5; %% energy requirement
 kapa = 1e-28;%processor coefficient
 D = 128;%sample size
 c = 1.68e7;%cpu bits
@@ -27,8 +28,7 @@ f= 7e8+(1e9-7e8)*rand(1,m);
 distance = 1+50.*rand(1,m);
 v = 30.*rand(1,m);
 
-% p = ones(1,m)*0.1; % 功率p初始化
-p = ones(1,m)*0.5; % 功率p初始化
+p = ones(1,m)*0.1; % 功率p初始化
 q = ones(1,m)*0.1;%RB assignment初始化
 itr = 1;%local iterations初始化
 
@@ -42,6 +42,9 @@ p_last = zeros(1,m);
 q_last = zeros(1,m);
 round_total = 0;
 
+loss_temp = zeros(1,m);
+loss_function = zeros(1,m);
+%%
  while(sum(abs(p_last-p)>=epsilon1)>0 && sum(abs(q_last-q)>=epsilon2)>0)
 %     p_last = p.copy();
     p_last = p;
@@ -59,3 +62,10 @@ disp(['最优值点为：']);
 p
 q
 itr
+
+%%
+for k = 1:m
+    loss_temp(k) =exp(-(I+bkn0)*inv_pos(p(k))/(distance(k)^(-gamma))*(2^(z/(b* q(k)*(T_max-itr*D*c/f(k))))-1));
+end
+loss_function = sum(loss_temp ./ q)
+

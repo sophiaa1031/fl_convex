@@ -12,7 +12,6 @@ gamma=3.76;
 itr = 2;%local iterations
 z = 28.1; %model size
 T_max = 35; %maximum latency in one round
-erequirement=0.7*ones(1,m); %% energy requirement
 D = 128;%sample size
 c = 1.68e7;%cpu bits
 
